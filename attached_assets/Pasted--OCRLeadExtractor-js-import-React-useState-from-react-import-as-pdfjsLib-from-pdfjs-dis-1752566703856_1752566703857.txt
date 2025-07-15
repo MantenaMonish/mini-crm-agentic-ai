@@ -1,0 +1,85 @@
+// OCRLeadExtractor.js
+import React, { useState } from 'react';
+import * as pdfjsLib from 'pdfjs-dist';
+import 'pdfjs-dist/build/pdf.worker.entry';
+
+const OCRLeadExtractor = () => {
+  const [lead, setLead] = useState(null);
+
+  const handlePDFUpload = async (e) => {
+    const file = e.target.files[0];
+    if (file && file.type === 'application/pdf') {
+      const extractedLead = await extractLeadFromPDF(file);
+      setLead(extractedLead);
+    } else {
+      alert("Please upload a valid PDF file.");
+    }
+  };
+
+  const extractLeadFromPDF = async (file) => {
+    try {
+      const text = await extractTextFromPDF(file);
+      const lead = parseLeadFromText(text);
+      return lead;
+    } catch (err) {
+      console.error("Extraction error:", err);
+      return null;
+    }
+  };
+
+  const extractTextFromPDF = async (file) => {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    let fullText = '';
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      const strings = content.items.map(item => item.str).join(' ');
+      fullText += strings + '\n';
+    }
+
+    return fullText;
+  };
+
+  const parseLeadFromText = (text) => {
+    const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z]{2,}\b/i;
+    const phoneRegex = /(?:\+91[\s-]?)?[6-9]\d{9}/;
+    const nameRegex = /\b([A-Z][a-z]+)\s+([A-Z][a-z]+)\b/;
+
+    const emailMatch = text.match(emailRegex);
+    const phoneMatch = text.match(phoneRegex);
+    const nameMatch = text.match(nameRegex);
+
+    const name = nameMatch ? `${nameMatch[1]} ${nameMatch[2]}` : "Unknown";
+    const email = emailMatch ? emailMatch[0] : "notfound@example.com";
+    const phone = phoneMatch ? phoneMatch[0] : "N/A";
+
+    return {
+      name,
+      email,
+      phone,
+      status: "New",
+      source: "Document"
+    };
+  };
+
+  return (
+    <div className="p-6 bg-gray-100 rounded-xl shadow-md">
+      <h2 className="text-xl font-bold mb-4">Upload PDF to Extract Lead</h2>
+      <input type="file" accept=".pdf" onChange={handlePDFUpload} className="mb-4" />
+      {lead && (
+        <div className="bg-white p-4 rounded-md shadow-md">
+          <h3 className="font-semibold mb-2">Extracted Lead:</h3>
+          <p><strong>Name:</strong> {lead.name}</p>
+          <p><strong>Email:</strong> {lead.email}</p>
+          <p><strong>Phone:</strong> {lead.phone}</p>
+          <p><strong>Status:</strong> {lead.status}</p>
+          <p><strong>Source:</strong> {lead.source}</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default OCRLeadExtractor;

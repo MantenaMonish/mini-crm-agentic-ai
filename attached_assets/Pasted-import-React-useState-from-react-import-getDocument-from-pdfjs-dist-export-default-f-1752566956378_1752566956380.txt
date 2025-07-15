@@ -1,0 +1,56 @@
+import React, { useState } from 'react';
+import { getDocument } from 'pdfjs-dist';
+
+export default function LeadExtractor() {
+  const [lead, setLead] = useState(null);
+
+  const extractLeadFromPDF = async (file) => {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await getDocument({ data: arrayBuffer }).promise;
+      let fullText = '';
+
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        const strings = content.items.map(item => item.str).join(' ');
+        fullText += strings + '\n';
+      }
+
+      const email = fullText.match(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z]{2,}\b/i)?.[0] || "notfound@example.com";
+      const phone = fullText.match(/(?:\+91[\s-]?)?[6-9]\d{9}/)?.[0] || "N/A";
+      const name = fullText.match(/HEMANTH\s+KUNCHAM/i)?.[0] || "Unknown";
+
+      setLead({ name, email, phone, status: "New", source: "Document" });
+    } catch (err) {
+      console.error("Extraction error:", err);
+      alert("Failed to extract lead info.");
+    }
+  };
+
+  const handlePDFUpload = async (e) => {
+    const file = e.target.files[0];
+    if (file && file.type === 'application/pdf') {
+      await extractLeadFromPDF(file);
+    } else {
+      alert("Please upload a valid PDF file.");
+    }
+  };
+
+  return (
+    <div className="p-6 max-w-md mx-auto bg-white rounded-xl shadow-md space-y-4">
+      <h2 className="text-xl font-bold">Upload Resume (PDF)</h2>
+      <input type="file" accept=".pdf" onChange={handlePDFUpload} />
+      {lead && (
+        <div className="mt-4 bg-gray-100 p-4 rounded">
+          <h3 className="font-semibold">Extracted Lead Info:</h3>
+          <p><strong>Name:</strong> {lead.name}</p>
+          <p><strong>Email:</strong> {lead.email}</p>
+          <p><strong>Phone:</strong> {lead.phone}</p>
+          <p><strong>Status:</strong> {lead.status}</p>
+          <p><strong>Source:</strong> {lead.source}</p>
+        </div>
+      )}
+    </div>
+  );
+}

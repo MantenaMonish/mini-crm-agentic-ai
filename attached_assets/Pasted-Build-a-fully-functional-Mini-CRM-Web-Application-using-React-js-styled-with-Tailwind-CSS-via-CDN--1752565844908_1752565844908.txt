@@ -1,0 +1,48 @@
+Build a fully functional Mini-CRM Web Application using React.js styled with Tailwind CSS (via CDN). The app should have a single-page UI consisting of the following core modules:
+
+Lead Management Dashboard
+
+Store leads with the fields: name, email, phone, status (either "New" or "Contacted"), and source ("Manual" or "Document").
+
+Display the leads in a responsive table with filter toggle buttons for status (New / Contacted).
+
+Each row should have buttons for Delete, Update Status, and Interact.
+
+Lead Creation Section
+
+Implement two ways to add leads:
+a. Manual Entry Form: Form inputs for name, email, and phone; on submission, the lead is added with status "New" and source "Manual".
+b. Document Upload: Implement a drag-and-drop area (supporting PDF or PNG). Extract name and email using OCR (use tesseract.js for PNG or pdfjs for PDF). Phone should default to "N/A" and source set as "Document".
+
+AI Agent Interaction Modal
+
+Clicking "Interact" should open a modal with chat-like UI where users can type queries. Based on mock AI behavior:
+
+If input includes "follow-up": return "Email [name] at [email]."
+
+If input includes "details": return "Name: [name], Email: [email], Status: [status]."
+
+Otherwise: return "Ask about follow-up or details."
+
+Workflow Designer (using React Flow)
+
+Display a React Flow canvas with a fixed trigger node "Lead Created".
+
+Allow the user to add up to 3 nodes with dropdown actions: "Send Email" or "Update Status".
+
+Support node connections via clicks. On saving the flow, show a toast and log the triggered actions in the console.
+
+Styling and Visual Effects
+
+Use Tailwind CSS for layout, buttons, cards, shadows, and modals.
+
+Ensure the UI is responsive and interactive with smooth transitions, hover animations, and rounded corners (rounded-2xl, shadow-xl, hover:scale-105).
+
+Make the React Flow nodes visually distinctive with color-coded actions and smooth connectors.
+
+Project Branding
+
+Header should display: "Mini-CRM with AI Agent" and a tagline below:
+"Built for Piazza Consulting Group – Revolutionizing enterprises with AI agents and workflows."
+
+Keep the app frontend-only. Use React state or context to manage leads and workflow data. No backend or database needed for now. Make sure the code is modular, clean, and well-commented.
